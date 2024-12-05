@@ -29,7 +29,7 @@ def calculate_percentage(data_dict, metric_index, label):
     print(f"\nPercentage of {label}")
     for obj, mean in valid_data.items():
         percentage = (mean / total) * 100
-        print(f"{obj} {label.lower()} percentage is {percentage:.2f}%")
+        print(f"{obj.upper()} {label.lower()} percentage is {percentage:.2f}%")
 
 # Neutral percentage
 def calculate_percentageNeutral(results):
@@ -41,4 +41,4 @@ def calculate_percentageNeutral(results):
     # Print neutral percentages
     total_neutral_sum = sum(total_neutral_counts.values())
     for obj, count in total_neutral_counts.items():
-        print(f"{obj} neutral percentage is {count / total_neutral_sum * 100:.2f}%")
+        print(f"{obj.upper()} neutral percentage is {count / total_neutral_sum * 100:.2f}%")
