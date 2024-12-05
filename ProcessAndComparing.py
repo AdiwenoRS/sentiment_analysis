@@ -42,7 +42,3 @@ def calculate_percentageNeutral(results):
     total_neutral_sum = sum(total_neutral_counts.values())
     for obj, count in total_neutral_counts.items():
         print(f"{obj} neutral percentage is {count / total_neutral_sum * 100:.2f}%")
-        
-    # append total_neutral_counts to results
-    # results["Neutral"] = total_neutral_counts 
-
