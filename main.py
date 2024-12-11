@@ -1,17 +1,18 @@
 import pandas as pd
 import ProcessAndComparing as PAC
 import time
+from textblob import TextBlob
 
 # Read data
-datas, words = pd.read_csv('twitter_dataset.csv'), pd.read_csv('wordsToDelete.csv')
-sentiments, wordsToDelete = datas.to_numpy(), words.to_numpy().flatten()
+datas = pd.read_csv('twitter_dataset.csv')
+sentiments = datas.to_numpy()
 objects = [] 
 filtered_sentences = {} 
 results = {} 
 splittedSentences = {} 
 
 def userChoice():
-    choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Normalized data\n4. Processed data\n5. Exit\nEnter your choice: ")
+    choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Normalized and processed data\n4. Exit\nEnter your choice: ")
     if choice == "1":
         if objects != []: # Check if objects is not empty. If it so, clear all necessary variable
             objects.clear()
@@ -37,30 +38,22 @@ def userChoice():
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
         else:
-            data = {}
-            file = "filtered_sentences_table.csv"
+            data1 = {}
+            data2 = {}
+            file1 = "filtered_sentences_table1.csv"
+            file2 = "filtered_sentences_table2.csv"
             
-            for obj, sentences in filtered_sentences.items():
-                data[obj] = sentences
-                
-            df = pd.DataFrame.from_dict(data, orient="index")
-            df = df.transpose()         
-            df.to_csv((file), index=False)
-            print("\nData was saved to", file)
+            PAC.calculateToTable(filtered_sentences, data1, data2, objects)
+            df1 = pd.DataFrame.from_dict(data1, orient="index") # Convert dictionary to table
+            df1 = df1.transpose() # allow N/A data in row         
+            df1.to_csv((file1), index=False) # Save to csv
+            df2 = pd.DataFrame.from_dict(data2, orient="index") # Convert dictionary to table
+            df2 = df2.transpose() # allow N/A data in row         
+            df2.to_csv((file2), index=False) # Save to csv
+
+            print(f"\nData was saved to {file1} and {file2}")
             userChoice()
     elif choice == "4":
-        if objects == []: # Check if objects is empty
-            print("\nNO OBJECTS : Please add objects to search.")
-            userChoice()
-        else:
-            for obj, metrics in results.items():
-                print(f"\n{obj.upper()}:")
-                print(f"Positive Polarity: {metrics[0]}")
-                print(f"Negative Polarity: {metrics[1]}")
-                print(f"Neutral Polarity: {metrics[2]}")
-                print(f"Subjectivity: {metrics[3]}")
-            userChoice()
-    elif choice == "5":
         exit()
     else:
         print("\nINVALID INPUT : Please enter a number between 1 to 4.")
