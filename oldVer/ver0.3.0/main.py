@@ -1,5 +1,6 @@
 import pandas as pd
 import ProcessAndComparing as PAC
+import keywordsOfData as KWD
 import time
 
 # Read data
@@ -11,7 +12,7 @@ results = {}
 splittedSentences = {} 
 
 def userChoice():
-    choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Normalized data\n4. Processed data\n5. Exit\nEnter your choice: ")
+    choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Keywords of objects\n4. Normalized data\n5. Processed data\n6. Exit\nEnter your choice: ")
     if choice == "1":
         if objects != []: # Check if objects is not empty. If it so, clear all necessary variable
             objects.clear()
@@ -32,23 +33,24 @@ def userChoice():
             PAC.calculate_percentageNeutral(results)
             print("\n", "-" * 50)
         userChoice()
-    elif choice == "3":
+    elif choice == "4":
         if objects == []: # Check if objects is empty
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
         else:
-            data = {}
+            data = []
+            
             file = "filtered_sentences_table.csv"
             
             for obj, sentences in filtered_sentences.items():
-                data[obj] = sentences
-                
-            df = pd.DataFrame.from_dict(data, orient="index")
-            df = df.transpose()         
+                for idx, sentence in enumerate(sentences, start=1):
+                    data.append({"Number": idx, "Object": obj, "Sentence": sentence})
+                    
+            df = pd.DataFrame(data)            
             df.to_csv((file), index=False)
             print("\nData was saved to", file)
             userChoice()
-    elif choice == "4":
+    elif choice == "5":
         if objects == []: # Check if objects is empty
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
@@ -60,7 +62,7 @@ def userChoice():
                 print(f"Neutral Polarity: {metrics[2]}")
                 print(f"Subjectivity: {metrics[3]}")
             userChoice()
-    elif choice == "5":
+    elif choice == "6":
         exit()
     else:
         print("\nINVALID INPUT : Please enter a number between 1 to 4.")
