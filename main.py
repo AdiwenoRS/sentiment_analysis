@@ -1,17 +1,29 @@
 import pandas as pd
 import ProcessAndComparing as PAC
+import keywordsOfData as KWD
+import time
 
 # Read data
-datas = pd.read_csv('data.csv')
-sentiments = datas.to_numpy()
-objects = [] # Objects stored here
-filtered_sentences = {} # Filtered sentences stored here
-results = {} # All results anylized stored here
+datas, words = pd.read_csv('twitter_dataset.csv'), pd.read_csv('wordsToDelete.csv')
+sentiments, wordsToDelete = datas.to_numpy(), words.to_numpy().flatten()
+objects = [] 
+filtered_sentences = {} 
+results = {} 
+splittedSentences = {} 
+
+def record_time(function):
+    def wrap(*args, **kwargs):
+        start_time = time.time()
+        function_return = function(*args, **kwargs)
+        print(f"\nData mining done. Time taken: {round(time.time() - start_time, 2)} seconds")
+        return function_return
+    return wrap
 
 def userChoice():
-    choice = input("\nTweet Sentiment Analysis\n1. Add objects\n2. Compare data\n3. Keywords of objects\n4. Normalized data\n5. Processed data\n6. Exit\nEnter your choice: ")
+    choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Keywords of objects\n4. Normalized data\n5. Processed data\n6. Exit\nEnter your choice: ")
     if choice == "1":
         addObjects()
+        userChoice()
     elif choice == "2":
         if objects == []: # Check if objects is empty
             print("\nNO OBJECTS : Please add objects to search.")
@@ -25,15 +37,27 @@ def userChoice():
             print("\n", "-" * 50)
         userChoice()
     elif choice == "3":
-        print("hello world")
+        KWD.keywords(filtered_sentences, splittedSentences)
+        KWD.deleteSomeWords(wordsToDelete, splittedSentences)
+        print(splittedSentences)
         userChoice()
     elif choice == "4":
         if objects == []: # Check if objects is empty
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
         else:
+            data = []
+            file = "filtered_sentences_table.csv"
+            
             for obj, sentences in filtered_sentences.items():
-                print(f"\n{obj.upper()}: {sentences}")
+                for idx, sentence in enumerate(sentences, start=1):
+                    data.append({"Number": idx, "Object": obj, "Sentence": sentence})
+                    #data.append({"Number": idx, obj: sentence})
+            df = pd.DataFrame(data)
+            print(df)
+            print("\nData was saved to", file)
+            
+            df.to_csv((file), index=False)
             userChoice()
     elif choice == "5":
         if objects == []: # Check if objects is empty
@@ -59,12 +83,13 @@ def addObjects():
     
     if userInput != "3" and userInput != "2": # Check if user input is valid
         print("\nINVALID INPUT : Please enter a number between 2 and 3.")
-        userChoice()
+        addObjects()
         
     for i in range(int(userInput)): # Add objects
         objects.append(input(f"Object {i + 1}: "))
     filterAndAnalyze() 
 
+@record_time
 def filterAndAnalyze():
     # Filter sentences for each object
     for obj in objects: # Create empty lists for each object into dictionary
@@ -73,10 +98,15 @@ def filterAndAnalyze():
     for sentence in sentiments.flatten(): # Iterate over each sentence
         for obj in objects: # Search for each object in each sentence
             if obj.upper() in sentence.upper():
-                filtered_sentences[obj].append(sentence)
+                filtered_sentences[obj].append(sentence) # Add sentence to list based on object
     
     for obj, sentences in filtered_sentences.items(): # Analyze sentences and store to results
         results[obj] = PAC.analyze_sentences(sentences)
-    userChoice()
+    
+    
+
+        
+
 # Start
-userChoice()
+if __name__ == "__main__":
+    userChoice()
