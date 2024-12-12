@@ -46,7 +46,7 @@ def calculate_percentageNeutral(results):
     for obj, count in total_neutral_counts.items():
         print(f"{obj.upper()} neutral percentage is {count / total_neutral_sum * 100:.2f}% from {total_neutral_counts[obj]} sentiments")
 
-def calculateToTable(filtered_sentences, data1, data2, objects):
+def calculateToTable(filtered_sentences, data1, data2, data3, objects):
     for obj, sentences in filtered_sentences.items():
         if obj == objects[0]:
             data1[obj] = sentences
@@ -87,4 +87,24 @@ def calculateToTable(filtered_sentences, data1, data2, objects):
                     data2["P Neutral"].append(polarity)    
                     data2["P Negative"].append(None)
                     data2['P Positive'].append(None)
-        
+
+        elif obj == objects[2]:
+            data3[obj] = sentences
+            data3['P Positive'], data3['P Negative'], data3['P Neutral'], data3['Subjectivity'] = [], [], [], []
+            for sentence in sentences:
+                sentiment = TextBlob(sentence).sentiment
+                polarity = sentiment.polarity
+                data3['Subjectivity'].append(sentiment.subjectivity)
+                if polarity > 0:
+                    data3["P Positive"].append(polarity)
+                    data3["P Negative"].append(None)
+                    data3['P Neutral'].append(None)
+                elif polarity < 0:
+                    data3['P Negative'].append(polarity)
+                    data3["P Positive"].append(None)
+                    data3['P Neutral'].append(None)
+                else:
+                    data3["P Neutral"].append(polarity)    
+                    data3["P Negative"].append(None)
+                    data3['P Positive'].append(None)
+

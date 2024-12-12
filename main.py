@@ -1,15 +1,11 @@
 import pandas as pd
 import ProcessAndComparing as PAC
 import time
-from textblob import TextBlob
 
 # Read data
-datas = pd.read_csv('twitter_dataset.csv')
+datas = pd.read_csv('datasets/twitter_dataset.csv')
 sentiments = datas.to_numpy()
-objects = [] 
-filtered_sentences = {} 
-results = {} 
-splittedSentences = {} 
+objects, filtered_sentences, results, splittedSentences = [], {}, {}, {}
 
 def userChoice():
     choice = input("\nTweet Sentiment Analysis\n1. Add objects and data mining\n2. Compare data\n3. Normalized and processed data\n4. Exit\nEnter your choice: ")
@@ -26,6 +22,7 @@ def userChoice():
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
         else:    
+            # Calculate percentage
             print("-" * 50)
             PAC.calculate_percentage(results, 0, "Positive Polarity")
             PAC.calculate_percentage(results, 1, "Negative Polarity")
@@ -38,20 +35,30 @@ def userChoice():
             print("\nNO OBJECTS : Please add objects to search.")
             userChoice()
         else:
-            data1 = {}
-            data2 = {}
-            file1 = "filtered_sentences_table1.csv"
-            file2 = "filtered_sentences_table2.csv"
-            
-            PAC.calculateToTable(filtered_sentences, data1, data2, objects)
-            df1 = pd.DataFrame.from_dict(data1, orient="index") # Convert dictionary to table
-            df1 = df1.transpose() # allow N/A data in row         
-            df1.to_csv((file1), index=False) # Save to csv
-            df2 = pd.DataFrame.from_dict(data2, orient="index") # Convert dictionary to table
-            df2 = df2.transpose() # allow N/A data in row         
-            df2.to_csv((file2), index=False) # Save to csv
+            data1, data2, data3, files, allData = {}, {}, {}, [], []
 
-            print(f"\nData was saved to {file1} and {file2}")
+            PAC.calculateToTable(filtered_sentences, data1, data2, data3, objects) # Process
+            
+            if len(objects) > 1 : # Add first and second file
+                file1 = "classified_sentiments/table1.csv"
+                file2 = "classified_sentiments/table2.csv"
+                allData.append(data1)
+                allData.append(data2)
+                files.append(file1)
+                files.append(file2)
+            if len(objects) == 3: # Add third file if there are 3 objects
+                file3 = "classified_sentiments/table3.csv"
+                allData.append(data3)
+                files.append(file3)
+                
+            print(f"\nData was saved to:")
+            
+            for data, file in zip(allData, files):
+                    df = pd.DataFrame.from_dict(data, orient="index") # Convert dictionary to table
+                    df = df.transpose() # Allow N/A data in columns         
+                    df.to_csv((file), index=False) # Save to csv
+                    print(file)
+
             userChoice()
     elif choice == "4":
         exit()
@@ -72,7 +79,7 @@ def addObjects():
         
     filterAndAnalyze() 
 
-def record_time(function): 
+def record_time(function): # Count mining process time
     def wrap(*args, **kwargs):
         start_time = time.time()
         function_return = function(*args, **kwargs)
@@ -84,10 +91,10 @@ def record_time(function):
 @record_time # Start record filterAndAnalyze() process time
 def filterAndAnalyze():
     # Filter sentences for each object
-    for obj in objects: # Create empty lists for each object into dictionary
+    for obj in objects: 
         filtered_sentences[obj] = []
         
-    for sentence in sentiments.flatten(): # Iterate over each sentence
+    for sentence in sentiments.flatten(): 
         for obj in objects: # Search for each object in each sentence
             if obj.upper() in sentence.upper():
                 filtered_sentences[obj].append(sentence) # Add sentence to list based on object
