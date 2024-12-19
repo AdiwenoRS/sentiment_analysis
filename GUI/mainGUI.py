@@ -1,7 +1,11 @@
 import pandas as pd
 import tkinter as tk
 from tkinter import messagebox, simpledialog
-import ProcessAndComparingGUI as PAC 
+import matplotlib.figure
+import matplotlib.patches
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import ProcessAndComparingGUI as PAC # Import ProcessAndComparingGUI.py
+
 
 # Read data
 datas = pd.read_csv('datasets/twitter_dataset.csv')
@@ -38,20 +42,8 @@ def addObjectsAndDataMining():
         
         print("Done")
         messagebox.showinfo("SUCCESS", "Objects added")
-
-# Option 2
-def compareData():
-    if objects == []: # Check if objects is empty
-        messagebox.showerror("NO OBJECTS", "Please do \"add objects and data mining\".")
-    else:    
-        # Calculate percentage
-        return (PAC.calculate_percentage(results, 0, "Positive Polarity"),
-        PAC.calculate_percentage(results, 1, "Negative Polarity"),
-        PAC.calculate_percentage(results, 3, "Subjectivity"),
-        PAC.calculate_percentageNeutral(results, "Neutral Polarity")
-        )
         
-
+        
 # Option 3
 def normalizedAndProcessedData():
     if objects == []: # Check if objects is empty
@@ -69,7 +61,7 @@ def normalizedAndProcessedData():
             files.append(file1)
             files.append(file2)
         if len(objects) == 3: # Add third file if there are 3 objects
-            file3 = "classified_sentiments/table3.csv"
+            file3 = "../classified_sentiments/table3.csv"
             allData.append(data3)
             files.append(file3)
                     
@@ -89,6 +81,10 @@ class tkinterApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         container = tk.Frame(self)
         self.title("Tweet Sentiment Analysis")
+        width= self.winfo_screenwidth() 
+        height= self.winfo_screenheight()
+        #setting tkinter window size
+        self.geometry("%dx%d" % (width, height))
         container.pack(side="top", fill="both", expand = True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -111,48 +107,86 @@ class tkinterApp(tk.Tk):
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text="TWEET SENTIMENT ANALYSIS", font=LARGE_FONT)
+        self.configure(background='white')
+        label = tk.Label(self, text="TWEET SENTIMENT ANALYSIS", font=LARGE_FONT, background='white')
         label.pack(pady=10,padx=10)
 
-        label_name = tk.Label(self, text="\n\nChoose an action:\n")
+        label_name = tk.Label(self, text="\n\nChoose an action:\n", background='#FBFBFB')
         label_name.pack(pady=5)
 
         # Button menu
-        add_button = tk.Button(self, text="Add objects and data mining", command=addObjectsAndDataMining)
+        add_button = tk.Button(self, text="Add objects and data mining", command=addObjectsAndDataMining, background='#D4F6FF')
         add_button.config(width=30, height=2)
         add_button.pack(pady=5)
 
-        compare_button = tk.Button(self, text="Compare Data", command=lambda: controller.show_frame(PageOne))
+        compare_button = tk.Button(self, text="Compare Data", command=lambda: controller.show_frame(PageOne), background='#D4F6FF')
         compare_button.config(width=30, height=2)
         compare_button.pack(pady=5)
 
-        save_button = tk.Button(self, text="Normalized and processed data", command=normalizedAndProcessedData)
+        save_button = tk.Button(self, text="Normalized and processed data", command=normalizedAndProcessedData, background='#D4F6FF')
         save_button.config(width=30, height=2)
         save_button.pack(pady=5)
 
-        exit_button = tk.Button(self, text="Exit", command=self.quit)
+        exit_button = tk.Button(self, text="Exit", command=self.quit, background='#FFDDAE')
         exit_button.config(width=30, height=2)
         exit_button.pack(pady=5)
 
 class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Compare Data", font=LARGE_FONT)
+        self.configure(background='white')
+        label = tk.Label(self, text="Compare Data", font=LARGE_FONT, background='white')
         label.pack(pady=10,padx=10)
         
-        def update_label():
-            output = compareData()  # Call the main() function
-            output_label.config(text=output)  # Update the label text
+        self.canvas = None
 
-        # Create a Label to display the output
-        output_label = tk.Label(self, text="Output will appear here", font=("Arial", 14))
-        output_label.pack(pady=20)
+        # Option 2
+        def compare():
+            if objects == []: # Check if objects is empty
+                messagebox.showerror("NO OBJECTS", "Please do \"add objects and data mining\".")
+            else:    
+                fig = matplotlib.figure.Figure(figsize=(15,5))
+                # Add Legends on the left side
+                ax = fig.add_subplot(100, 1000, 1)
+                ax.pie([20, 30, 40, 10]) 
+                ax.legend(["Positivity","Negativity","Neutrality", "Subjectivity"])
+                
+                for i in range(len(objects)):
+                    positive = PAC.calculate_percentage(results, 0, "positive")[objects[i].upper()]["percentage"]
+                    negative = PAC.calculate_percentage(results, 1, "negative")[objects[i].upper()]["percentage"]
+                    neutral = PAC.calculate_percentageNeutral(results, "neutral")[objects[i].upper()]["percentage"]
+                    subjectivity = PAC.calculate_percentage(results, 3, "subjectivity")[objects[i].upper()]["percentage"]
+                
+                    ax = fig.add_subplot(1, 3, i+1)
+                    ax.pie([positive, negative, neutral, subjectivity]) 
+                    ax.legend([f"{positive}%", f"{negative}%", f"{neutral}%", f"{subjectivity}%"])
+                    circle = matplotlib.patches.Circle((0,0), 0.7, facecolor='white')
+                    ax.add_patch(circle)
+                    ax.set_title(objects[i].upper() + f" - {len(filtered_sentences[objects[i]])} sentiments")
+
+                self.canvas = FigureCanvasTkAgg(fig, master=self)
+                self.canvas.get_tk_widget().pack()
+                self.canvas.draw()   
+        
+        def clear_canvas(): # function to clear "canvas" variable
+            if self.canvas: # if "canvas" variable True
+                self.canvas.get_tk_widget().destroy()
+                self.canvas = None
+
+        label1 = tk.Label(self, text="Press \"Run\" button to see compared data\nPress \"Clear\" and then \"Run\" button to update compared data", background='white')
+        label1.pack(pady=10)
         
         # Create a Button to trigger the update
-        update_button = tk.Button(self, text="Run", command=update_label, font=("Arial", 12))
+        update_button = tk.Button(self, text="Run", command=compare, background='#D4F6FF')
+        update_button.config(width=30, height=2)
         update_button.pack(pady=10)
         
-        button1 = tk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        clear_button = tk.Button(self, text="Clear", command=clear_canvas, background='#C6E7FF')
+        clear_button.config(width=30, height=2)
+        clear_button.pack(pady=10)
+        
+        button1 = tk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage), background='#FFDDAE')
+        button1.config(width=30, height=2)
         button1.pack()
 
 

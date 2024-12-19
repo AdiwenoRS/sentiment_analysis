@@ -58,7 +58,8 @@ def calculate_percentageNeutral(results, label):
             "label": label,
             "total_sentiments": total_neutral_counts[obj]
         }
-
+    return percentages
+    
 def calculateToTable(filtered_sentences, data1, data2, data3, objects):
     for obj, sentences in filtered_sentences.items():
         if obj == objects[0]:
