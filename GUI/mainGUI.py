@@ -61,7 +61,7 @@ def normalizedAndProcessedData():
             files.append(file1)
             files.append(file2)
         if len(objects) == 3: # Add third file if there are 3 objects
-            file3 = "../classified_sentiments/table3.csv"
+            file3 = "classified_sentiments/table3.csv"
             allData.append(data3)
             files.append(file3)
                     
@@ -111,7 +111,7 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="TWEET SENTIMENT ANALYSIS", font=LARGE_FONT, background='white')
         label.pack(pady=10,padx=10)
 
-        label_name = tk.Label(self, text="\n\nChoose an action:\n", background='#FBFBFB')
+        label_name = tk.Label(self, text="\n\nChoose an action:\n", background='white')
         label_name.pack(pady=5)
 
         # Button menu
@@ -147,22 +147,28 @@ class PageOne(tk.Frame):
             else:    
                 fig = matplotlib.figure.Figure(figsize=(15,5))
                 # Add Legends on the left side
+                
                 ax = fig.add_subplot(100, 1000, 1)
-                ax.pie([20, 30, 40, 10]) 
-                ax.legend(["Positivity","Negativity","Neutrality", "Subjectivity"])
+                ax.pie([20, 30, 50]) 
+                ax.legend([objects[i].upper() + "-" +str(len(filtered_sentences[objects[i]])) for i in range(len(objects))])
+                
+                percentages = {0: [], 1: [], 2: [], 3: []}
+                title = ["Positivity", "Negativity", "Neutrality", "Subjectivity"]
                 
                 for i in range(len(objects)):
-                    positive = PAC.calculate_percentage(results, 0, "positive")[objects[i].upper()]["percentage"]
-                    negative = PAC.calculate_percentage(results, 1, "negative")[objects[i].upper()]["percentage"]
-                    neutral = PAC.calculate_percentageNeutral(results, "neutral")[objects[i].upper()]["percentage"]
-                    subjectivity = PAC.calculate_percentage(results, 3, "subjectivity")[objects[i].upper()]["percentage"]
+                    percentages[0].append(PAC.calculate_percentage(results, 0, "positive")[objects[i].upper()]["percentage"])
+                    percentages[1].append(PAC.calculate_percentage(results, 1, "negative")[objects[i].upper()]["percentage"])
+                    percentages[2].append(PAC.calculate_percentageNeutral(results, "neutral")[objects[i].upper()]["percentage"])
+                    percentages[3].append(PAC.calculate_percentage(results, 3, "subjectivity")[objects[i].upper()]["percentage"])
                 
-                    ax = fig.add_subplot(1, 3, i+1)
-                    ax.pie([positive, negative, neutral, subjectivity]) 
-                    ax.legend([f"{positive}%", f"{negative}%", f"{neutral}%", f"{subjectivity}%"])
+                for obj, percentage in percentages.items():
+                    ax = fig.add_subplot(1, 4, obj+1)
+                    ax.pie(percentage) 
+                    ax.legend([str(percentage[i])+"%" for i in range(len(percentage))])
                     circle = matplotlib.patches.Circle((0,0), 0.7, facecolor='white')
                     ax.add_patch(circle)
-                    ax.set_title(objects[i].upper() + f" - {len(filtered_sentences[objects[i]])} sentiments")
+                    ax.set_title(title[obj])
+                print(percentages)
 
                 self.canvas = FigureCanvasTkAgg(fig, master=self)
                 self.canvas.get_tk_widget().pack()
