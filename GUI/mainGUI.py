@@ -10,7 +10,7 @@ import ProcessAndComparingGUI as PAC # Import ProcessAndComparingGUI.py
 # Read data
 datas = pd.read_csv('datasets/twitter_dataset.csv')
 sentiments = datas.to_numpy()
-objects, filtered_sentences, results, splittedSentences = [], {}, {}, {}  
+objects, filtered_sentences, results = [], {}, {}
 LARGE_FONT= ("Verdana", 24)  
 
 # Option 1
@@ -19,7 +19,6 @@ def addObjectsAndDataMining():
         objects.clear()
         filtered_sentences.clear()
         results.clear()
-        splittedSentences.clear()
 
     userInput = simpledialog.askstring("input", "How many objects you want to search? Min 2 | Max 3:")
     
@@ -36,10 +35,15 @@ def addObjectsAndDataMining():
             for obj in objects: # Search for each object in each sentence
                 if obj.upper() in sentence.upper():
                     filtered_sentences[obj].append(sentence) # Add sentence to list based on object
+                else: # Check if there is no data
+                    messagebox.showerror("NO DATA", "There is no data for " + obj)
+                    objects.clear()
+                    filtered_sentences.clear()
+                    return
 
         for obj, sentences in filtered_sentences.items(): # Analyze sentences and store to results
             results[obj] = PAC.analyze_sentences(sentences)
-        
+                        
         print("Done")
         messagebox.showinfo("SUCCESS", "Objects added")
         
@@ -144,10 +148,12 @@ class PageOne(tk.Frame):
         def compare():
             if objects == []: # Check if objects is empty
                 messagebox.showerror("NO OBJECTS", "Please do \"add objects and data mining\".")
-            else:    
+            else:  
+                if self.canvas: # if "canvas" variable True, destroy
+                    self.canvas.get_tk_widget().destroy()
+                    self.canvas = None
                 fig = matplotlib.figure.Figure(figsize=(15,5))
                 # Add Legends on the left side
-                
                 ax = fig.add_subplot(100, 1000, 1)
                 ax.pie([20, 30, 50]) 
                 ax.legend([objects[i].upper() + "-" +str(len(filtered_sentences[objects[i]])) for i in range(len(objects))])
@@ -160,7 +166,7 @@ class PageOne(tk.Frame):
                     percentages[1].append(PAC.calculate_percentage(results, 1, "negative")[objects[i].upper()]["percentage"])
                     percentages[2].append(PAC.calculate_percentageNeutral(results, "neutral")[objects[i].upper()]["percentage"])
                     percentages[3].append(PAC.calculate_percentage(results, 3, "subjectivity")[objects[i].upper()]["percentage"])
-                
+                    
                 for obj, percentage in percentages.items():
                     ax = fig.add_subplot(1, 4, obj+1)
                     ax.pie(percentage) 
@@ -179,11 +185,11 @@ class PageOne(tk.Frame):
                 self.canvas.get_tk_widget().destroy()
                 self.canvas = None
 
-        label1 = tk.Label(self, text="Press \"Run\" button to see compared data\nPress \"Clear\" and then \"Run\" button to update compared data", background='white')
+        label1 = tk.Label(self, text="Press \"Run/Update\" button to see compared data or update new data.\nPress \"Clear\" button to clear canvas if data wont update.", background='white')
         label1.pack(pady=10)
         
         # Create a Button to trigger the update
-        update_button = tk.Button(self, text="Run", command=compare, background='#D4F6FF')
+        update_button = tk.Button(self, text="Run/Update", command=compare, background='#D4F6FF')
         update_button.config(width=30, height=2)
         update_button.pack(pady=10)
         
