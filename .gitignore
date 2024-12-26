@@ -1,3 +1,8 @@
 codeTesting
 /venv
-oldVer/
+datasets/training.1600000.processed.noemoticon.csv
+classified_sentiments/table1.csv
+classified_sentiments/table2.csv
+classified_sentiments/table3.csv
+datasets/test.csv
+datasets/twitter_dataset.csv

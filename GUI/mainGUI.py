@@ -8,8 +8,12 @@ import ProcessAndComparingGUI as PAC # Import ProcessAndComparingGUI.py
 
 
 # Read data
-datas = pd.read_csv('datasets/twitter_dataset.csv')
-sentiments = datas.to_numpy()
+datas = pd.read_csv('datasets/training.1600000.processed.noemoticon.csv')
+
+# Choose a column that contain text from the dataset you want to analyze by changing the number
+# 1 means select the second column (indexing starts at 0). : means select all rows.
+sentiments = datas.iloc[:, 5].to_numpy()
+
 objects, filtered_sentences, results = [], {}, {}
 LARGE_FONT= ("Verdana", 24)  
 
@@ -43,7 +47,16 @@ def addObjectsAndDataMining():
                 objects.clear()
                 filtered_sentences.clear()
                 return
-
+        
+        smallest = len(filtered_sentences[objects[0]])
+        
+        for obj, sentence in filtered_sentences.items(): # Find the smallest sentence
+            if len(sentence) < smallest:
+                smallest = len(sentence)
+                
+        for obj, sentence in filtered_sentences.items(): # Turn every object sentence to the smallest
+            filtered_sentences[obj] = sentence[:smallest]
+    
         for obj, sentences in filtered_sentences.items(): # Analyze sentences and store to results
             results[obj] = PAC.analyze_sentences(sentences)
                         
@@ -77,7 +90,7 @@ def normalizedAndProcessedData():
                 df = df.transpose() # Allow N/A data in columns         
                 df.to_csv((file), index=False) # Save to csv
                 print(file)
-                messagebox.showinfo("SUCCESS", f"All data was saved to {file}")
+                messagebox.showinfo("SUCCESS", f"Data was saved to {file}")
 
 # What we do here is populate this tuple with all of the possible pages to our application.
 # This will load all of these pages for us. Within our __init__ method, we're calling StartPage 
@@ -130,7 +143,7 @@ class StartPage(tk.Frame):
         compare_button.config(width=30, height=2)
         compare_button.pack(pady=5)
 
-        save_button = tk.Button(self, text="Normalized and processed data", command=normalizedAndProcessedData, background='#D4F6FF')
+        save_button = tk.Button(self, text="Normalized and processed data - CSV", command=normalizedAndProcessedData, background='#D4F6FF')
         save_button.config(width=30, height=2)
         save_button.pack(pady=5)
 
@@ -177,7 +190,6 @@ class PageOne(tk.Frame):
                     circle = matplotlib.patches.Circle((0,0), 0.7, facecolor='white')
                     ax.add_patch(circle)
                     ax.set_title(title[obj])
-                print(percentages)
 
                 self.canvas = FigureCanvasTkAgg(fig, master=self)
                 self.canvas.get_tk_widget().pack()

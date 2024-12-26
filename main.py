@@ -3,8 +3,12 @@ import ProcessAndComparing as PAC
 import time
 
 # Read data
-datas = pd.read_csv('datasets/twitter_dataset.csv')
-sentiments = datas.to_numpy()
+datas = pd.read_csv('datasets/training.1600000.processed.noemoticon.csv')
+
+# Choose a column that contain text from the dataset you want to analyze by changing the number
+# 1 means select the second column (indexing starts at 0). : means select all rows.
+sentiments = datas.iloc[:, 5].to_numpy()
+
 objects, filtered_sentences, results, splittedSentences = [], {}, {}, {}
 
 def userChoice():
@@ -90,6 +94,7 @@ def record_time(function): # Count mining process time
 
 @record_time # Start record filterAndAnalyze() process time
 def filterAndAnalyze():
+    
     # Filter sentences for each object
     for obj in objects: 
         filtered_sentences[obj] = []
@@ -98,6 +103,14 @@ def filterAndAnalyze():
         for obj in objects: # Search for each object in each sentence
             if obj.upper() in sentence.upper():
                 filtered_sentences[obj].append(sentence) # Add sentence to list based on object
+
+    smallest = len(filtered_sentences[objects[0]])
+    for obj, sentence in filtered_sentences.items():
+        if len(sentence) < smallest:
+            smallest = len(sentence)
+
+    for obj, sentence in filtered_sentences.items():
+        filtered_sentences[obj] = sentence[:smallest]
     
     for obj, sentence in filtered_sentences.items():
             if sentence == []:
