@@ -1,1 +1,1 @@
-This folder will take file called table[number].csv
+This folder will take files called table[number].csv

@@ -35,11 +35,14 @@ def addObjectsAndDataMining():
             for obj in objects: # Search for each object in each sentence
                 if obj.upper() in sentence.upper():
                     filtered_sentences[obj].append(sentence) # Add sentence to list based on object
-                else: # Check if there is no data
-                    messagebox.showerror("NO DATA", "There is no data for " + obj)
-                    objects.clear()
-                    filtered_sentences.clear()
-                    return
+                #else: # Check if there is no data
+                    
+        for obj, sentence in filtered_sentences.items():
+            if sentence == []:
+                messagebox.showerror("NO DATA", "There is no data for " + obj)
+                objects.clear()
+                filtered_sentences.clear()
+                return
 
         for obj, sentences in filtered_sentences.items(): # Analyze sentences and store to results
             results[obj] = PAC.analyze_sentences(sentences)

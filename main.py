@@ -73,9 +73,9 @@ def addObjects():
     if userInput != "3" and userInput != "2": # Check if user input is valid
         print("\nINVALID INPUT : Please enter a number between 2 and 3.")
         addObjects()
-        
+    
     for i in range(int(userInput)): # Add objects
-        objects.append(input(f"Object {i + 1}: "))
+        objects.append(input(f"Object {i + 1}: "))    
         
     filterAndAnalyze() 
 
@@ -98,6 +98,14 @@ def filterAndAnalyze():
         for obj in objects: # Search for each object in each sentence
             if obj.upper() in sentence.upper():
                 filtered_sentences[obj].append(sentence) # Add sentence to list based on object
+    
+    for obj, sentence in filtered_sentences.items():
+            if sentence == []:
+                objects.clear()
+                filtered_sentences.clear()
+                
+                print(f"\nNO DATA : There is no data for {obj}")
+                return 
     
     for obj, sentences in filtered_sentences.items(): # Analyze sentences and store to results
         results[obj] = PAC.analyze_sentences(sentences)
